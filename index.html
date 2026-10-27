@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nook: a cozy, private notebook app for your browser</title>
+    <meta name="description" content="A notes app shaped like a real spiral notebook. Turn pages, tick off to-dos, stick on notes and photo-booth strips. Encrypted on your device, no account." />
+    <!-- nook.example is a placeholder: replace it with your domain here, in public/robots.txt and public/sitemap.xml -->
+    <link rel="canonical" href="https://nook.example/" />
+    <link rel="icon" type="image/svg+xml" href="/nook.svg" />
+    <meta name="theme-color" content="#ffd23f" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Nook" />
+    <meta property="og:url" content="https://nook.example/" />
+    <meta property="og:title" content="Nook: notes, in an actual notebook" />
+    <meta property="og:description" content="Design a cover, turn real pages, scrapbook with a built-in photo booth. Encrypted with your password, right on your device." />
+    <meta property="og:image" content="https://nook.example/landing/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="An open Nook notebook: a weekend to-do list with a sticky note, and an album page with polaroids and a photo-booth strip" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Nook",
+      "url": "https://nook.example/",
+      "image": "https://nook.example/landing/og.jpg",
+      "description": "A notes app shaped like a real spiral notebook, with scrapbook albums, a photo booth and a focus timer. Everything is encrypted with your password and stays on your device.",
+      "applicationCategory": "ProductivityApplication",
+      "operatingSystem": "Any modern web browser",
+      "browserRequirements": "Requires JavaScript, Web Crypto and IndexedDB",
+      "featureList": ["Spiral notebook with page turns", "Blocks, to-dos and columns", "Sticky notes and containers", "Scrapbook albums with a photo booth", "Bookcase of notebooks", "Pomodoro focus timer", "AES-256 encryption on your device", "No account"]
+    }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Caveat:wght@600&family=Nunito:wght@400..800&display=swap" />
+    <link rel="stylesheet" href="/src/landing.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="top wrap">
+      <a class="brand" href="/"><img src="/nook.svg" alt="" width="30" height="30" />Nook</a>
+      <nav aria-label="Main">
+        <a href="#features">Features</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <a class="btn small" href="/app/">Open Nook</a>
+    </header>
+
+    <main id="main">
+      <section class="hero wrap">
+        <div class="hero-copy">
+          <p class="hand">a cozy notebook that lives in your browser ✿</p>
+          <h1>Notes, in an actual <mark>notebook.</mark></h1>
+          <p class="lede">Nook is a notes app shaped like a spiral notebook. Design the cover, turn real pages, tick off to-dos, and stick on sticky notes and photo-booth strips. Everything is encrypted with your password, right on your device.</p>
+          <div class="ctas">
+            <a class="btn" href="/app/">Open Nook</a>
+            <a class="btn soft" href="#tour">▶ Watch the 20-second tour</a>
+          </div>
+          <p class="fine">No account. No sign-up. Nothing to install.</p>
+        </div>
+        <figure class="shot hero-shot">
+          <img src="/landing/notebook.webp" width="1050" height="690" fetchpriority="high"
+            alt="An open Nook notebook: a 'Weekend plan' page with ticked to-dos and a yellow sticky note, next to a 'Summer ’26' album page with polaroids, a sunflower sticker and a four-shot photo-booth strip" />
+        </figure>
+      </section>
+
+      <section id="features" class="wrap">
+        <h2 class="center">Everything a paper notebook does,<br /> and a few things it can’t</h2>
+
+        <article class="row">
+          <figure class="shot"><img src="/landing/writing.webp" width="476" height="654" loading="lazy" decoding="async"
+            alt="A Nook page titled 'Weekend plan' with a short note, a checklist with two items ticked off, a quote, and a sticky note reading 'don’t forget the tote bag!!'" /></figure>
+          <div>
+            <p class="hand">write like it’s paper</p>
+            <h3>Blocks, to-dos and sticky notes</h3>
+            <p>Type <kbd>/</kbd> for any block: headings, lists, to-dos, quotes, callouts and dividers. Markdown shortcuts work too (<kbd>#</kbd>, <kbd>-</kbd>, <kbd>[]</kbd>). Drag blocks side by side into columns, and pull sticky notes and containers out of the toolbox to put anywhere on the page.</p>
+            <p>When a page fills up, your writing carries on to the next one, like it would on paper. Turn pages with the arrows, <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd> or a swipe.</p>
+          </div>
+        </article>
+
+        <article class="row flip">
+          <figure class="shot"><img src="/landing/album.webp" width="480" height="660" loading="lazy" decoding="async"
+            alt="A Nook album page with two polaroid photos captioned 'lake day' and '3 scoops', a sunflower sticker, and a photo-booth strip of four retro-filtered shots dated in handwriting" /></figure>
+          <div>
+            <p class="hand">say cheese</p>
+            <h3>Scrapbook albums, with a photo booth</h3>
+            <p>Album pages come laid out with photo frames, on warm scrapbook paper. Fill them from your computer, or from the built-in booth: one shot or a classic strip of four, with Natural, B&amp;W, Warm, Retro and Cool filters. Add stickers and captions, then reshuffle the layout in one click.</p>
+          </div>
+        </article>
+
+        <article class="row">
+          <figure class="shot"><img src="/landing/bookcase.webp" width="950" height="640" loading="lazy" decoding="async"
+            alt="Nook’s home screen: two wooden shelves named 'Everyday' and 'Memories' holding colorful notebook and album spines, with a little potted plant" /></figure>
+          <div>
+            <p class="hand">a shelf of your own</p>
+            <h3>A bookcase for all of them</h3>
+            <p>Nook opens on your bookcase. Notebooks and albums stand on shelves you name, each spine in its own cover’s colors. Drag books to rearrange them, and design every cover: color, pattern, sticker and elastic band.</p>
+          </div>
+        </article>
+
+        <ul class="cards">
+          <li><span class="ic">⏱</span><h3>Focus timer</h3><p>A Pomodoro timer lives in the little island at the top of the screen, with short and long breaks.</p></li>
+          <li><span class="ic">🔍</span><h3>Jump anywhere</h3><p><kbd>Ctrl</kbd>+<kbd>K</kbd> searches every page in every book, and creates one if it isn’t there yet.</p></li>
+          <li><span class="ic">🌙</span><h3>Light and dark</h3><p>Follows your system, or flip it yourself. Phones get one page at a time, with swipes to turn.</p></li>
+        </ul>
+      </section>
+
+      <section id="privacy" class="privacy">
+        <div class="wrap row">
+          <figure class="shot"><img src="/landing/lock.webp" width="640" height="700" loading="lazy" decoding="async"
+            alt="Nook’s lock screen: a red notebook with an open padlock, 'Welcome back', a password field and an Unlock button" /></figure>
+          <div>
+            <p class="hand">private by design</p>
+            <h2>Locked. Encrypted. <mark>Only on your device.</mark></h2>
+            <ul class="checks">
+              <li>Your password becomes an AES-256 key (PBKDF2, 600,000 rounds). It’s never stored and never sent anywhere.</li>
+              <li>Notes and photos are saved sealed, in your browser. There’s no Nook server holding a copy.</li>
+              <li>No account, no sign-up, and no tracking inside the app.</li>
+              <li>Lock Nook with one click, and it stays shut until the password is entered again.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="tour" class="wrap center">
+        <h2>See it in 20 seconds</h2>
+        <video class="shot tour" controls preload="none" playsinline width="1280" height="720" poster="/landing/tour-poster.webp">
+          <source src="/landing/nook-tour.mp4" type="video/mp4" />
+          <a href="/landing/nook-tour.mp4">Download the Nook tour video</a>
+        </video>
+      </section>
+
+      <section id="faq" class="wrap faq">
+        <h2 class="center">Questions</h2>
+        <details>
+          <summary>Where are my notes stored?</summary>
+          <p>In your browser on this device, encrypted with your password. Clearing this site’s data in your browser clears them too, so use <strong>Export</strong> now and then to keep a backup.</p>
+        </details>
+        <details>
+          <summary>What happens if I forget my password?</summary>
+          <p>There’s no reset. Without the password, your notes can’t be decrypted by anyone. You can erase everything and start fresh, or import a backup you exported earlier.</p>
+        </details>
+        <details>
+          <summary>Can I use Nook on more than one device?</summary>
+          <p>Each browser keeps its own shelf. To move it, export a backup (one .json file, photos included) and import it on the other device. The backup file isn’t password-protected, so keep it somewhere safe.</p>
+        </details>
+        <details>
+          <summary>Does it work on a phone?</summary>
+          <p>Yes. On small screens the book shows one page at a time, and you swipe to turn.</p>
+        </details>
+        <details>
+          <summary>Does the photo booth upload my pictures?</summary>
+          <p>No. The camera only runs while the booth is open, and your shots are encrypted and saved on your device like everything else.</p>
+        </details>
+      </section>
+
+      <section class="wrap end center">
+        <p class="hand">your shelf is waiting ✿</p>
+        <h2>Pull a notebook off the shelf.</h2>
+        <a class="btn" href="/app/">Open Nook</a>
+      </section>
+    </main>
+
+    <footer class="wrap foot">
+      <span class="brand"><img src="/nook.svg" alt="" width="22" height="22" />Nook</span>
+      <span>Your notes stay on your device.</span>
+    </footer>
+  </body>
+</html>

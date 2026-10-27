@@ -1,0 +1,499 @@
+/* Nook: a spiral notebook on a desk. Calm, soft and precise around the edges (sidebar, dock, dialogs);
+   the playfulness lives in the book itself: covers, tabs, coil, sticky notes, confetti.
+   Colors that sit behind dark text (--sun, --sky…) stay the same in both themes; text on them is --on. */
+:root {
+  color-scheme: light;
+  --desk: #f4f0e8; --dot: rgba(60, 45, 20, .07); --paper: #fffefb; --side: #faf7f1;
+  --text: #24221f; --muted: #8a8378; --on: #1f1d1a;
+  --edge: rgba(31, 29, 26, .1); --edge-strong: rgba(31, 29, 26, .22); --hover: rgba(31, 29, 26, .05); --line: rgba(31, 29, 26, .1);
+  --sh-1: 0 1px 2px rgba(31, 29, 26, .06), 0 1px 1px rgba(31, 29, 26, .03);
+  --sh-2: 0 2px 6px rgba(31, 29, 26, .06), 0 10px 24px -8px rgba(31, 29, 26, .16);
+  --sh-3: 0 4px 12px rgba(31, 29, 26, .06), 0 28px 56px -18px rgba(31, 29, 26, .28);
+  --tomato: #f26a4b; --sun: #ffd166; --sky: #8ecbff; --mint: #7fdcb5; --lilac: #c9b8ff; --gum: #ff9ec7; --peach: #ffbf8f;
+  --accent: var(--tomato); --highlight: color-mix(in srgb, var(--sun) 45%, transparent);
+  --display: "Bricolage Grotesque", ui-rounded, "Segoe UI", sans-serif;
+  --body: "Nunito", ui-rounded, "Segoe UI", sans-serif;
+  --hand: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+  --pop: cubic-bezier(.3, 1.4, .5, 1);
+}
+/* theme: data-theme on <html>, set before first paint in index.html, switched by the ☀️/🌙 button */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --desk: #141311; --dot: rgba(255, 245, 230, .05); --paper: #1f1e1b; --side: #181715;
+  --text: #ede7dc; --muted: #9a9389;
+  --edge: rgba(255, 245, 230, .08); --edge-strong: rgba(255, 245, 230, .18); --hover: rgba(255, 245, 230, .06); --line: rgba(255, 245, 230, .09);
+  --sh-1: 0 1px 2px rgba(0, 0, 0, .3);
+  --sh-2: 0 2px 6px rgba(0, 0, 0, .3), 0 10px 24px -8px rgba(0, 0, 0, .5);
+  --sh-3: 0 4px 12px rgba(0, 0, 0, .3), 0 28px 56px -18px rgba(0, 0, 0, .7);
+  --highlight: color-mix(in srgb, var(--tomato) 35%, transparent);
+}
+* { box-sizing: border-box }
+html, body, #root { height: 100% }
+html, body, main { overscroll-behavior-x: none } /* a sideways trackpad swipe turns the page, not browser back */
+main.turning { overflow: hidden }
+body {
+  margin: 0; color: var(--text); font: 16px/1.6 var(--body); overflow: hidden; -webkit-font-smoothing: antialiased;
+  background: var(--desk) radial-gradient(var(--dot) 1.2px, transparent 1.6px) 0 0 / 24px 24px;
+}
+#root { display: flex }
+button { font: inherit; color: inherit }
+::selection { background: color-mix(in srgb, var(--sun) 70%, transparent); color: var(--on) }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+main::-webkit-scrollbar, aside::-webkit-scrollbar, .doc::-webkit-scrollbar { width: 10px; height: 10px }
+main::-webkit-scrollbar-thumb, aside::-webkit-scrollbar-thumb, .doc::-webkit-scrollbar-thumb { background: var(--edge-strong); border: 3px solid transparent; background-clip: padding-box; border-radius: 10px }
+
+/* soft button: hairline edge, lifts a little on hover */
+.chunky { border: 1px solid var(--edge); border-radius: 10px; background: var(--paper); box-shadow: var(--sh-1); cursor: pointer; font-weight: 700; transition: translate .15s, box-shadow .15s }
+.chunky:hover { translate: 0 -1px; box-shadow: var(--sh-2) }
+.chunky:active { translate: 0 0; box-shadow: var(--sh-1) }
+
+/* ---------- sidebar: the shelf ---------- */
+aside { width: 252px; flex: none; background: var(--side); border-right: 1px solid var(--edge); display: flex; flex-direction: column; padding: 14px 12px; transition: margin-left .25s ease; z-index: 40; overflow: auto }
+aside.hidden { margin-left: -252px }
+.side-head { display: flex; align-items: center; gap: 9px; padding: 2px 4px 18px 46px; font: 700 22px/1 var(--display); letter-spacing: -.03em }
+.side-head img { width: 28px; height: 28px; transition: rotate .3s var(--pop) }
+.side-head:hover img { rotate: -10deg }
+.theme-btn { margin-left: auto; width: 32px; height: 32px; padding: 0; font-size: 15px; line-height: 1; border-radius: 50% }
+.pages { flex: 1; min-height: 80px }
+.shelf-label { padding: 0 10px 6px; font: 700 11px var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--muted) }
+.book-row { display: flex; align-items: center; gap: 10px; padding: 6px 8px; margin: 2px 0; border: 1px solid transparent; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14.5px }
+.book-row:hover { background: var(--hover) }
+.pages > .book-row { background: var(--paper); border-color: var(--edge); box-shadow: var(--sh-1) } /* the open book, under the shelf */
+.book-row .t, .page-item .t { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis }
+.toc { margin: 4px 0 10px 21px; padding-left: 10px; border-left: 1.5px solid var(--edge) }
+.page-item { display: flex; align-items: center; gap: 8px; padding: 4px 8px; margin: 1px 0; border-radius: 8px; cursor: pointer; font-size: 14px; color: var(--muted) }
+.page-item:hover { background: var(--hover); color: var(--text) }
+.page-item.active { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--text); font-weight: 700 }
+.pno { min-width: 16px; font: 700 11px var(--display); opacity: .7; text-align: center }
+.page-item.active .pno { color: var(--accent); opacity: 1 }
+.del { opacity: 0; border: 0; background: none; color: var(--muted); cursor: pointer; padding: 0 4px; font-size: 17px; line-height: 1 }
+.page-item:hover .del, .book-row:hover .del, .del:focus-visible { opacity: 1 }
+.del:hover { color: var(--accent) }
+.btn { display: block; width: 100%; border: 0; background: none; color: var(--muted); cursor: pointer; padding: 6px 10px; border-radius: 8px; font-size: 13.5px; font-weight: 600; text-align: left }
+.btn:hover { background: var(--hover); color: var(--text) }
+.new-page { margin-top: 6px; border: 1px dashed var(--edge-strong) }
+.toggle-side { position: fixed; top: 12px; left: 12px; width: 36px; height: 36px; padding: 0; text-align: center; font-size: 16px; color: var(--text); z-index: 45 }
+.side-actions { display: flex; gap: 8px; margin-top: 12px }
+.side-actions .chunky { flex: 1; padding: 7px 0; font-size: 13px }
+.save-state { display: flex; align-items: center; gap: 6px; margin: 12px 8px 0; font-size: 12px; font-weight: 600; color: var(--muted) }
+.save-state:not(.bad)::first-letter { color: #2f9e6f }
+.save-state.bad { color: #d93a3f; animation: shake .5s 2 }
+@keyframes shake { 25% { translate: -3px 0 } 75% { translate: 3px 0 } }
+
+/* ---------- dock: the toolbox you drag from ---------- */
+.dock { position: fixed; bottom: 16px; left: 50%; translate: -50% 0; z-index: 44; display: flex; align-items: stretch; gap: 2px; padding: 6px; max-width: calc(100vw - 24px); background: color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter: blur(10px); border: 1px solid var(--edge); border-radius: 16px; box-shadow: var(--sh-3) }
+aside:not(.hidden) ~ .dock { left: calc(50% + 126px); max-width: calc(100vw - 276px) } /* center over the page, not the window */
+.dock-sep { width: 1px; background: var(--edge-strong); margin: 8px 4px }
+.chip { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-width: 64px; padding: 6px 8px 5px; border-radius: 11px; font-size: 11px; font-weight: 600; color: var(--muted); cursor: grab; user-select: none; white-space: nowrap; transition: translate .2s var(--pop), background .15s, color .15s }
+.chip:hover { translate: 0 -3px; background: var(--hover); color: var(--text) }
+.chip:active { cursor: grabbing }
+.chip .ic { display: grid; place-items: center; width: 30px; height: 26px; border-radius: 8px; background: color-mix(in srgb, var(--tile, var(--sun)) 55%, var(--paper)); color: var(--on); font: 700 12px/1 var(--display) }
+[data-theme="dark"] .chip .ic { background: var(--tile, var(--sun)) }
+.chip:nth-child(5n+1) { --tile: var(--sun) } .chip:nth-child(5n+2) { --tile: var(--sky) } .chip:nth-child(5n+3) { --tile: var(--mint) }
+.chip:nth-child(5n+4) { --tile: var(--gum) } .chip:nth-child(5n) { --tile: var(--lilac) }
+.card-chip { cursor: pointer }
+.card-chip.box-chip { --tile: var(--sky) } .card-chip.sticky-chip { --tile: var(--sun) }
+
+/* ---------- the book: an open spiral notebook ----------
+   .spread = two page slots side by side. Open: they lie on the cover (.board), the coil runs down the
+   middle, index tabs stick out on the left. Closed: design panel | cover. Size never changes between the two. */
+/* Paper has a fixed size, like a real notebook: what fits on a page never depends on the window.
+   The whole book is scaled to fit instead (App sets the spread's `scale` and the sizer's on-screen size). */
+main { flex: 1; display: grid; place-items: center; overflow: auto; padding: 72px 64px 112px }
+.sizer { position: relative; flex: none }
+.spread {
+  --w: 525px; --h: 700px; --gap: 14px; /* keep in step with PAGE_W / PAGE_H / GAP in App.jsx */
+  position: absolute; top: 0; left: 0; transform-origin: 0 0; isolation: isolate; display: flex; gap: var(--gap); height: var(--h);
+}
+.slot { position: relative; flex: none; width: var(--w); height: var(--h) }
+.slot > * { width: 100%; height: 100% }
+.board { position: absolute; inset: -12px; z-index: 0; background-color: var(--cover); border: 1px solid rgba(0, 0, 0, .14); border-radius: 16px; box-shadow: var(--sh-3) }
+.coil { position: absolute; z-index: 3; top: 14px; bottom: 6px; left: calc(50% - 26px); width: 52px; pointer-events: none; transition: left .4s var(--pop);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='22'%3E%3Crect x='3.5' y='7' width='45' height='8' rx='4' fill='%23dfe2e6' stroke='%235a5650' stroke-width='1.5'/%3E%3Cpath d='M9 9.6h34' stroke='%23fff' stroke-width='1.4' stroke-linecap='round' opacity='.9'/%3E%3C/svg%3E") 0 0 / 52px 22px repeat-y;
+  filter: drop-shadow(0 2px 1.5px rgba(0, 0, 0, .18)) }
+.spread.closed .coil { left: calc(50% - 8px) } /* wrapped round the closed cover's edge */
+.tab-rail { position: absolute; z-index: -1; right: calc(100% + 2px); top: 22px; bottom: 22px; display: flex; flex-direction: column; gap: 5px }
+.tab { flex: 0 1 38px; min-height: 8px; width: 40px; padding: 0 10px 0 0; overflow: hidden; border: 0; border-radius: 8px 0 0 8px; background: var(--tab); color: var(--on); font: 700 11px var(--display); cursor: pointer; box-shadow: var(--sh-1), inset -6px 0 6px -4px rgba(0, 0, 0, .15); transition: translate .2s var(--pop) }
+.tab:hover { translate: -4px 0 }
+.tab.on { translate: -8px 0 }
+.spread.closed .tab-rail { right: auto; left: calc(100% - 2px) }
+.spread.closed .tab { padding: 0 0 0 12px; border-radius: 0 8px 8px 0; box-shadow: var(--sh-1), inset 6px 0 6px -4px rgba(0, 0, 0, .15) }
+.spread.closed .tab:hover { translate: 4px 0 }
+.tab:nth-child(6n+1) { --tab: var(--tomato) } .tab:nth-child(6n+2) { --tab: var(--sun) } .tab:nth-child(6n+3) { --tab: var(--mint) }
+.tab:nth-child(6n+4) { --tab: var(--sky) } .tab:nth-child(6n+5) { --tab: var(--lilac) } .tab:nth-child(6n) { --tab: var(--gum) }
+
+/* A page = the paper (.doc, scrolls its writing) + cards stuck on it. Cards stay inside the page;
+   the clip only leaves room for the page-stack edge peeking out below and beside it. */
+.page { position: relative; clip-path: inset(0 -4px -4px -4px) }
+.page::after { content: ""; position: absolute; z-index: 900; top: 0; bottom: 0; width: 34px; pointer-events: none }
+.slot.left .page::after { right: 0; background: linear-gradient(-90deg, rgba(0, 0, 0, .13), transparent) }
+.slot.right .page::after { left: 0; background: linear-gradient(90deg, rgba(0, 0, 0, .13), transparent) }
+.doc {
+  --holes: radial-gradient(circle at 9px 11px, var(--cover) 0 3.5px, rgba(0, 0, 0, .3) 4px 5px, transparent 5.5px);
+  display: flex; flex-direction: column; height: 100%; overflow: hidden; padding: 30px 30px 20px 60px; border: 1px solid rgba(0, 0, 0, .12); background-color: var(--paper);
+}
+.doc.tall { overflow-y: auto; overscroll-behavior: contain } /* a single block bigger than the page: the one case it scrolls */
+.doc > * { flex: none }
+.doc > .filler { flex: 1 0 24px } /* the empty rest of the page: click to write there */
+.slot.right .doc { border-radius: 3px 10px 10px 3px; background-image: var(--holes); background-position: left 0 top 11px; background-size: 18px 22px; background-repeat: repeat-y;
+  box-shadow: 3px 3px 0 -1px var(--paper), 3px 3px 0 0 var(--edge-strong) } /* the rest of the pages, peeking out */
+.slot.left .doc { padding-right: 40px; border-radius: 10px 3px 3px 10px; background-image: var(--holes); background-position: right 0 top 11px; background-size: 18px 22px; background-repeat: repeat-y;
+  box-shadow: -3px 3px 0 -1px var(--paper), -3px 3px 0 0 var(--edge-strong) }
+.page-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap }
+.page-icon { font-size: 30px; line-height: 1; cursor: pointer; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 14px; background: color-mix(in srgb, var(--sun) 35%, var(--paper)); transition: rotate .3s var(--pop), scale .3s var(--pop) }
+.page-icon:hover { rotate: -6deg; scale: 1.06 }
+.dateline { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted) }
+.title { flex: none; align-self: flex-start; font: 700 32px/1.15 var(--display); letter-spacing: -.03em; outline: none; margin: 14px 0 12px; width: fit-content; max-width: 100%; min-width: 4ch; padding: 0 4px;
+  background: linear-gradient(transparent 62%, var(--highlight) 62% 92%, transparent 92%) }
+.title:empty::before { content: "Untitled"; color: var(--muted) }
+.filler { min-height: 120px; cursor: text; border-top: 2px solid transparent }
+.filler.drop-end { border-top-color: var(--accent) }
+
+/* ---------- blocks ---------- */
+.block { position: relative; display: flex; align-items: flex-start; gap: 6px; border-radius: 6px }
+.tools { position: absolute; left: -54px; top: 3px; display: flex; gap: 2px; opacity: 0; transition: opacity .12s }
+.block:hover .tools, .tools:focus-within { opacity: 1 }
+.tools button { border: 0; background: none; color: var(--muted); cursor: pointer; width: 24px; height: 24px; border-radius: 6px; padding: 0; font-size: 15px; line-height: 24px; font-weight: 700 }
+.tools button:hover { background: var(--hover); color: var(--text) }
+.tools .grip { cursor: grab; letter-spacing: -3px }
+.content { flex: 1; min-width: 0; outline: none; padding: 3px 2px; word-break: break-word }
+.content:empty::before { content: attr(data-ph); color: var(--muted); pointer-events: none }
+.text .content:empty:not(:focus)::before { content: "" }
+.h1 .content, .h2 .content, .h3 .content { font-family: var(--display); letter-spacing: -.02em; line-height: 1.25 }
+.block.h1 { margin-top: 20px } .h1 .content { font-size: 28px; font-weight: 700 } .h1 .tools { top: 9px }
+.block.h2 { margin-top: 14px } .h2 .content { font-size: 22px; font-weight: 700 } .h2 .tools { top: 5px }
+.block.h3 { margin-top: 10px } .h3 .content { font-size: 18px; font-weight: 700 } .h3 .tools { top: 2px }
+.mark { flex: none; width: 24px; text-align: center; padding-top: 3px; user-select: none; font-weight: 700 }
+.bullet .mark { color: var(--accent); font-size: 20px; line-height: 24px }
+.number .mark { text-align: right; font-family: var(--display); color: var(--accent) }
+.todo input { appearance: none; flex: none; width: 18px; height: 18px; margin: 5px 5px 0; border: 1.5px solid var(--edge-strong); border-radius: 6px; background: var(--paper); cursor: pointer; transition: scale .2s var(--pop), background-color .15s, border-color .15s }
+.todo input:hover { border-color: var(--accent) }
+.todo input:checked { border-color: var(--accent); background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 2.8L12.5 5' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 13px no-repeat; animation: tick .3s var(--pop) }
+@keyframes tick { from { scale: .7 } }
+.todo.done .content { text-decoration: line-through 1.5px var(--muted); color: var(--muted) }
+.quote .content { border-left: 3px solid var(--accent); padding-left: 14px; margin: 6px 0; font-size: 17px; font-style: italic }
+.callout { background: color-mix(in srgb, var(--sun) 22%, var(--paper)); border: 1px solid color-mix(in srgb, var(--sun) 55%, transparent); border-radius: 10px; padding: 12px 14px 10px 10px; margin: 12px 4px 10px 0 }
+.callout::after { content: ""; position: absolute; top: -9px; left: 44%; width: 64px; height: 17px; rotate: -3deg; opacity: .55; pointer-events: none;
+  background: repeating-linear-gradient(-45deg, var(--gum) 0 6px, color-mix(in srgb, var(--gum) 50%, #fff) 6px 12px) } /* washi tape */
+.callout .tools { top: 13px }
+.divider { padding: 14px 0 }
+.divider hr { flex: 1; height: 10px; margin: 0; border: 0; background: var(--text); opacity: .2;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='10'%3E%3Cpath d='M0 5q5-5 10 0t10 0' fill='none' stroke='black' stroke-width='1.8'/%3E%3C/svg%3E") 0 0 / 20px 10px repeat-x;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='10'%3E%3Cpath d='M0 5q5-5 10 0t10 0' fill='none' stroke='black' stroke-width='1.8'/%3E%3C/svg%3E") 0 0 / 20px 10px repeat-x }
+
+/* columns + drop indicators */
+.cols { display: flex; gap: 40px }
+.col { flex: 1; min-width: 0 }
+.dragging { opacity: .4 }
+.drop-above { box-shadow: 0 -3px 0 var(--accent) }
+.drop-below { box-shadow: 0 3px 0 var(--accent) }
+.drop-left { box-shadow: -4px 0 0 var(--accent) }
+.drop-right { box-shadow: 4px 0 0 var(--accent) }
+
+#menu { position: fixed; z-index: 60; background: var(--paper); border: 1px solid var(--edge); border-radius: 12px; box-shadow: var(--sh-3); padding: 5px; width: 224px; max-height: 330px; overflow: auto; font-size: 14px; animation: pop .16s ease-out }
+.mi { display: flex; gap: 10px; align-items: center; padding: 5px 8px; border-radius: 7px; cursor: pointer }
+.mi.on { background: var(--hover) }
+.mi .ic { width: 24px; text-align: center; font: 700 12px var(--display); color: var(--muted) }
+
+/* ---------- cards: containers + sticky notes; resize = native corner handle ---------- */
+.card { position: absolute; z-index: 1; display: flex; flex-direction: column; overflow: auto; resize: both; min-width: 160px; min-height: 110px; max-width: 100%; max-height: 100%; animation: pop .3s var(--pop); transition: scale .15s, box-shadow .15s }
+.card.lifted { scale: 1.02; box-shadow: var(--sh-3) !important; transition: none }
+.card-bar { display: flex; align-items: center; gap: 4px; flex: none; cursor: grab; touch-action: none; user-select: none; padding: 8px 8px 6px }
+.card-bar:active { cursor: grabbing }
+.card-bar .grip { letter-spacing: -3px; font-size: 12px; font-weight: 700; padding: 0 6px 0 2px; opacity: .45 }
+.card-title { flex: 0 1 auto; min-width: 4ch; font: 700 15.5px/1.3 var(--display); letter-spacing: -.01em; cursor: text; user-select: text }
+.card-btn { flex: none; display: grid; place-items: center; border: 0; background: none; cursor: pointer; width: 24px; height: 24px; border-radius: 6px; padding: 0; font-size: 16px; line-height: 1; color: inherit; opacity: .6 }
+.card-btn:first-of-type { margin-left: auto }
+.card-btn:hover { opacity: 1; background: rgba(0, 0, 0, .07) }
+.swatch::before { content: ""; width: 12px; height: 12px; border-radius: 50%;
+  background: conic-gradient(var(--tomato), var(--sun), var(--mint), var(--sky), var(--lilac), var(--gum), var(--tomato)) }
+.card-body { flex: 1; display: flex; flex-direction: column; padding: 6px 14px 8px 32px }
+.card .filler { flex: 1; min-height: 16px }
+.card .tools { left: -28px }
+.card .tools .add { display: none }
+
+/* containers: soft folder, tinted header */
+.box { --c: var(--sky); background: var(--paper); border: 1px solid var(--edge-strong); border-radius: 12px; box-shadow: var(--sh-2) }
+.box .card-bar { background: color-mix(in srgb, var(--c) 45%, var(--paper)); border-bottom: 1px solid var(--edge) }
+.box .card-title:empty::before { color: var(--muted) }
+.c-blue { --c: var(--sky) } .c-yellow { --c: var(--sun) } .c-green { --c: var(--mint) } .c-pink { --c: var(--gum) }
+.c-purple { --c: var(--lilac) } .c-brown { --c: var(--peach) } .c-gray { --c: #cfc9bd }
+
+/* sticky notes: handwritten, taped down */
+.sticky { color: var(--on); border-radius: 2px 2px 2px 16px; font: 600 22px/1.25 var(--hand); box-shadow: 0 1px 1px rgba(0, 0, 0, .08), 0 10px 18px -8px rgba(0, 0, 0, .3) }
+.sticky .card-bar { position: relative; min-height: 30px; padding: 4px 6px 0 }
+.sticky .card-bar::before { content: ""; position: absolute; top: -4px; left: 50%; translate: -50%; rotate: -2deg; width: 72px; height: 20px; background: rgba(255, 255, 255, .55); box-shadow: 0 1px 2px rgba(0, 0, 0, .08) } /* tape */
+.sticky .card-btn { opacity: 0; font-family: var(--body) }
+.sticky:hover .card-btn, .sticky:focus-within .card-btn { opacity: .6 }
+@media (hover: none) { .sticky .card-btn { opacity: .6 } }
+.sticky-text { flex: 1; padding: 0 16px 14px }
+.sticky .content:empty::before { color: rgba(31, 29, 26, .38) }
+.c-lemon { background: #fff3a0 } .c-peach { background: #ffd2b8 } .c-mint { background: #c8f2dc } .c-sky { background: #cfe7ff } .c-lilac { background: #e4dbff }
+
+/* ---------- books: cover patterns (over --cover), the cover, its designer ---------- */
+.pat-dots { background-image: radial-gradient(rgba(255, 255, 255, .38) 2.5px, transparent 3px); background-size: 24px 24px }
+.pat-stripes { background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, .2) 0 12px, transparent 12px 24px) }
+.pat-grid { background-image: linear-gradient(rgba(0, 0, 0, .1) 1.5px, transparent 1.5px), linear-gradient(90deg, rgba(0, 0, 0, .1) 1.5px, transparent 1.5px); background-size: 26px 26px }
+.pat-checker { background-image: conic-gradient(rgba(255, 255, 255, .22) 25%, transparent 0 50%, rgba(255, 255, 255, .22) 0 75%, transparent 0); background-size: 40px 40px }
+/* ---------- home: the bookcase Nook opens on ---------- */
+:root { --wood: #c79a6b; --wood-top: #e0bb90; --back: #eee4d4 }
+:root[data-theme="dark"] { --wood: #6b4f36; --wood-top: #8a6a4c; --back: #211e1a }
+main.at-home { place-items: start center; padding-top: 84px }
+.home { width: min(1080px, 100%); padding-bottom: 32px }
+.home-head h1 { margin: 0; font: 700 34px/1.1 var(--display); letter-spacing: -.03em }
+.home-head p { margin: 6px 0 26px; color: var(--muted); font-size: 14.5px }
+.shelf-unit { margin-bottom: 28px }
+.shelf-name { display: flex; align-items: center; gap: 10px; margin: 0 6px 10px }
+.shelf-title { min-width: 6ch; font: 700 17px var(--display); letter-spacing: -.01em; outline: none; cursor: text }
+.shelf-title:empty::before { content: attr(data-ph); color: var(--muted) }
+.shelf-count { padding: 1px 8px; border-radius: 999px; background: var(--hover); color: var(--muted); font-size: 12px; font-weight: 700 }
+.shelf-name:hover .del { opacity: 1 }
+/* one bookcase per shelf: wooden sides, a back panel, and a plank under every row of books */
+.shelf-row {
+  --row: 236px; --plank: 18px;
+  display: flex; flex-wrap: wrap; align-content: flex-start; gap: var(--plank) 4px; padding: 16px 24px var(--plank);
+  border: 1px solid rgba(0, 0, 0, .14); border-radius: 12px;
+  background:
+    linear-gradient(to bottom, transparent var(--row), var(--wood-top) var(--row) calc(var(--row) + 4px), var(--wood) calc(var(--row) + 4px)) 0 16px / 100% calc(var(--row) + var(--plank)) repeat-y,
+    var(--back);
+  box-shadow: inset 12px 0 0 var(--wood), inset -12px 0 0 var(--wood), inset 0 14px 20px -14px rgba(0, 0, 0, .35), var(--sh-2);
+}
+.shelf-unit:first-of-type .shelf-row::after { content: "🪴"; align-self: flex-end; margin-left: auto; font-size: 56px; line-height: 1 } /* a plant on the shelf */
+.spine-slot { display: flex; align-items: flex-end; height: var(--row) }
+.spine {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; width: var(--sw); height: var(--sh); padding: 12px 0 0; overflow: hidden;
+  border: 0; border-radius: 4px 4px 1px 1px; background-color: var(--cover); cursor: pointer;
+  box-shadow: inset 3px 0 0 rgba(255, 255, 255, .25), inset -4px 0 0 rgba(0, 0, 0, .18), 0 1px 0 rgba(0, 0, 0, .3), 2px 0 4px -2px rgba(0, 0, 0, .25);
+  transition: translate .25s var(--pop);
+}
+.spine[class*="pat-"] { background-size: 12px 12px }
+.spine::before, .spine::after { content: ""; position: absolute; left: 0; right: 0; height: 4px; background: rgba(0, 0, 0, .16) } /* printed bands */
+.spine::before { top: 44px } .spine::after { bottom: 18px }
+.spine:hover { translate: 0 -10px }
+.spine:active { cursor: grabbing }
+.spine .st { font-size: 18px; line-height: 1 }
+.spine .tt { writing-mode: vertical-rl; max-height: calc(var(--sh) - 72px); margin-top: 14px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font: 700 13px/1 var(--display); letter-spacing: .01em }
+.spine.add { --sw: 46px; --sh: 172px; padding-top: 14px; background: none; border: 1.5px dashed var(--edge-strong); box-shadow: none; color: var(--muted) }
+.spine.add::before, .spine.add::after { display: none }
+.spine.add:hover { color: var(--text); border-color: var(--muted) }
+.spine.add .tt { margin-top: 10px; font-weight: 600 }
+.add-shelf { padding: 10px 18px; font-size: 14px }
+.btn.back-home { margin: 0 0 10px; color: var(--text); font-weight: 700 }
+
+.mini-cover { flex: none; display: grid; place-items: center; width: 24px; height: 31px; font-size: 13px; border-radius: 3px 6px 6px 3px; background-color: var(--cover); background-size: 8px 8px; box-shadow: inset 4px 0 0 rgba(0, 0, 0, .18), var(--sh-1) }
+
+.cover {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px;
+  padding: 40px 54px 40px 62px; color: var(--on);
+  background-color: var(--cover); border: 1px solid rgba(0, 0, 0, .16); border-radius: 4px 16px 16px 4px;
+  box-shadow: 5px 5px 0 -1px var(--paper), 5px 5px 0 0 var(--edge-strong), var(--sh-3); /* the pages inside, peeking out */
+}
+/* coil holes: line up with .spread.closed .coil, and show the first page through them */
+.cover::before { content: ""; position: absolute; left: 16px; top: 11px; bottom: 0; width: 18px; pointer-events: none;
+  background: radial-gradient(circle at 9px 11px, var(--paper) 0 3.5px, rgba(0, 0, 0, .3) 4px 5px, transparent 5.5px) 0 0 / 18px 22px repeat-y }
+.band { position: absolute; right: 22px; top: -1px; bottom: -1px; width: 14px; background: color-mix(in srgb, var(--cover) 45%, #111); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .2) }
+.cover-sticker { display: grid; place-items: center; width: 112px; height: 112px; padding: 0; font-size: 56px; line-height: 1; border: 0; border-radius: 50%; background: var(--paper); box-shadow: var(--sh-2); cursor: pointer; transition: rotate .3s var(--pop), scale .3s var(--pop) }
+.cover-sticker:hover { rotate: -8deg; scale: 1.05 }
+.label { width: 100%; padding: 18px 20px 14px; text-align: center; color: var(--text); background: var(--paper); border-radius: 12px; box-shadow: var(--sh-2) }
+.cover-title { font: 700 34px/1.08 var(--display); letter-spacing: -.035em; outline: none; word-break: break-word; cursor: text }
+.cover-sub { margin-top: 4px; font: 600 22px/1.15 var(--hand); color: var(--accent); outline: none; cursor: text }
+.cover [data-ph]:empty::before { content: attr(data-ph); color: var(--muted) }
+.cover-foot { position: absolute; right: 48px; bottom: 16px; padding: 2px 10px; font: 700 10.5px/1.8 var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--text); background: color-mix(in srgb, var(--paper) 85%, transparent); border-radius: 999px }
+
+/* inside of the cover (left of page 1): tinted endpaper with a bookplate */
+.endpaper { display: grid; place-items: center; padding: 28px; border: 1px solid rgba(0, 0, 0, .12); border-radius: 10px 3px 3px 10px; background-color: color-mix(in srgb, var(--cover) 35%, var(--paper)) }
+.bookplate { width: min(78%, 300px); padding: 22px 20px 18px; text-align: center; background: var(--paper); border-radius: 12px; box-shadow: var(--sh-2) }
+.bp-small { font: 700 10.5px var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--muted) }
+.bp-name { margin: 6px 0 10px; padding-bottom: 4px; border-bottom: 1.5px dashed var(--edge-strong); font: 600 28px/1.1 var(--hand); color: var(--accent); outline: none; cursor: text }
+.bp-name:empty::before { content: attr(data-ph); color: var(--muted) }
+.bp-title { font: 700 18px/1.2 var(--display); letter-spacing: -.02em }
+.bp-sticker { margin-top: 10px; font-size: 30px }
+
+/* closed: the design panel waits in the left slot, where the cover will land when it opens */
+.tools-slot { display: grid; place-items: center }
+.cover-tools { width: min(320px, 100%); padding: 20px 22px 22px; background: var(--paper); border: 1px solid var(--edge); border-radius: 16px; box-shadow: var(--sh-3) }
+.cover-tools h2 { margin: 0 0 2px; font: 700 22px/1.2 var(--display); letter-spacing: -.02em }
+.tool-label { margin: 16px 0 8px; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted) }
+.swatches { display: flex; flex-wrap: wrap; gap: 7px }
+.swatch-btn { width: 32px; height: 32px; padding: 0; border: 1px solid rgba(0, 0, 0, .12); border-radius: 9px; cursor: pointer; transition: translate .15s var(--pop) }
+.swatch-btn:hover { translate: 0 -2px }
+.swatch-btn.on { outline: 2px solid var(--accent); outline-offset: 2px }
+.swatch-btn.pat { background-color: var(--cover); background-size: 11px 11px }
+.sticker-btn { background: var(--paper); border-color: var(--edge-strong); font-size: 17px; line-height: 1 }
+.tool-check { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 14px; font-weight: 600; cursor: pointer }
+.tool-check input { width: 16px; height: 16px; accent-color: var(--accent) }
+.open-book { width: 100%; margin-top: 18px; padding: 11px; font-size: 15px; background: var(--text); color: var(--paper); border-color: transparent }
+
+/* page turning + where-am-I */
+.turn { position: fixed; top: calc(50% - 22px); z-index: 42; width: 44px; height: 44px; padding: 0; border-radius: 50%; color: var(--text); font: 600 26px/1 var(--display) }
+.turn.prev { left: 14px }
+aside:not(.hidden) ~ .turn.prev { left: 268px }
+.turn.next { right: 22px }
+.folio { position: fixed; top: 16px; right: 22px; z-index: 42; max-width: 28vw; padding: 4px 12px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 12.5px; font-weight: 600; color: var(--muted); background: var(--paper); border: 1px solid var(--edge); border-radius: 999px; box-shadow: var(--sh-1) }
+
+/* ---------- photos, stickers, albums ---------- */
+/* album / scrapbook paper: warm and plain, made for sticking things on */
+.page.album { --paper: #f1e6cf }
+[data-theme="dark"] .page.album { --paper: #2a2621 }
+.page.album .doc { background-image: var(--holes), radial-gradient(rgba(120, 90, 40, .08) 1px, transparent 1.5px); background-size: 18px 22px, 9px 9px; background-repeat: repeat-y, repeat }
+.slot.left .page.album .doc { background-position: right 0 top 11px, 0 0 }
+
+/* photo: a polaroid (white border, caption strip); a booth strip brings its own frame */
+.photo { display: flex; flex-direction: column; padding: 10px 10px 0; background: #fffdf8; color: #2a2723; border-radius: 2px; cursor: grab; box-shadow: 0 1px 2px rgba(0, 0, 0, .12), 0 12px 24px -10px rgba(0, 0, 0, .35) }
+.photo.strip { padding: 0 }
+.photo-img { flex: 1; min-height: 0; background: #e9e4da center / cover no-repeat; border-radius: 1px }
+.photo-cap { flex: none; height: 48px; padding: 6px 4px 0; overflow: hidden; text-align: center; font: 600 21px/1.1 var(--hand); color: #2a2723; cursor: text }
+.photo .content:empty::before { color: rgba(42, 39, 35, .35) }
+.photo::before { content: ""; position: absolute; z-index: 1; top: -3px; left: 50%; translate: -50%; rotate: -3deg; width: 76px; height: 20px; background: rgba(255, 255, 255, .55); box-shadow: 0 1px 2px rgba(0, 0, 0, .1); pointer-events: none } /* tape */
+.photo .card-bar, .sticker .card-bar { position: absolute; z-index: 2; top: 2px; right: 2px; padding: 0; min-height: 0; background: none }
+.photo .card-btn, .sticker .card-btn { opacity: 0; background: rgba(255, 255, 255, .85); color: #2a2723 }
+.photo:hover .card-btn, .sticker:hover .card-btn, .photo:focus-within .card-btn { opacity: 1 }
+@media (hover: none) { .photo .card-btn, .sticker .card-btn { opacity: 1 } }
+/* an empty frame from the album layout, waiting for a photo */
+.photo.empty { background: color-mix(in srgb, #fffdf8 70%, transparent); box-shadow: 0 1px 2px rgba(0, 0, 0, .08) }
+.photo.empty::before { opacity: .5 }
+.photo-slot { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; border: 2px dashed rgba(42, 39, 35, .22); border-radius: 3px; color: rgba(42, 39, 35, .55); font-size: 13px; font-weight: 700 }
+.slot-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px }
+.slot-btns button { border: 0; padding: 5px 10px; border-radius: 999px; background: rgba(42, 39, 35, .08); color: #2a2723; font-size: 12px; font-weight: 700; cursor: pointer }
+.slot-btns button:hover { background: rgba(42, 39, 35, .16) }
+.layout-btn { margin-left: auto; border: 1px solid var(--edge-strong); padding: 3px 10px; border-radius: 999px; background: none; color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer }
+.layout-btn:hover { color: var(--text); background: var(--hover) }
+
+/* sticker: a big emoji that scales with its box */
+.sticker { container-type: size; display: grid; place-items: center; min-width: 48px; min-height: 48px; overflow: hidden; cursor: grab; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .2)) }
+.sticker-emoji { font-size: 78cqmin; line-height: 1; user-select: none }
+
+/* the photo booth */
+.booth-scrim { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 16px; background: rgba(15, 13, 11, .55); backdrop-filter: blur(4px); animation: fade .2s ease-out }
+.booth { position: relative; width: min(560px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 46px 22px 22px; text-align: center; color: #f6f1e7; background: #2a1b1b; border-radius: 22px; box-shadow: var(--sh-3); animation: pop .25s var(--pop) }
+.booth-curtain { position: absolute; inset: 0 0 auto; height: 30px; border-radius: 22px 22px 0 0; /* red velvet curtain, scalloped */
+  background: radial-gradient(circle at 50% 100%, transparent 11px, #c0392b 11.5px) 0 0 / 30px 30px, linear-gradient(90deg, rgba(0, 0, 0, .18) 50%, transparent 50%) 0 0 / 30px 100% }
+.booth h2 { margin: 0 0 14px; font: 700 22px var(--display); letter-spacing: -.02em }
+.booth-x { position: absolute; top: 36px; right: 14px; width: 32px; height: 32px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .1); color: #f6f1e7; font-size: 20px; cursor: pointer }
+.booth-view { position: relative; overflow: hidden; aspect-ratio: 4 / 3; border-radius: 14px; background: #111; border: 6px solid #f6f1e7 }
+.booth-view video { width: 100%; height: 100%; object-fit: cover; scale: -1 1 } /* mirror, like a mirror */
+.booth-count { position: absolute; inset: 0; display: grid; place-items: center; font: 800 140px/1 var(--display); color: #fff; text-shadow: 0 6px 30px rgba(0, 0, 0, .5); animation: count .7s ease-out both }
+@keyframes count { from { scale: 1.6; opacity: 0 } 30% { scale: 1; opacity: 1 } to { opacity: .2 } }
+.booth-flash { position: absolute; inset: 0; background: #fff; pointer-events: none; animation: flash .45s ease-out both }
+@keyframes flash { from { opacity: 1 } to { opacity: 0 } }
+.booth-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin-top: 14px }
+.booth-chip, .booth-mode button { border: 0; padding: 6px 13px; border-radius: 999px; background: rgba(255, 255, 255, .1); color: #f6f1e7; font-size: 13px; font-weight: 700; cursor: pointer }
+.booth-chip.on, .booth-mode button.on { background: #f6f1e7; color: #2a1b1b }
+.booth-mode { display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(255, 255, 255, .08); margin-right: auto }
+.booth-shutter { width: 62px; height: 62px; margin-right: auto; border-radius: 50%; border: 5px solid #f6f1e7; background: #e5484d; cursor: pointer; box-shadow: 0 0 0 3px rgba(229, 72, 77, .35); transition: scale .15s }
+.booth-shutter:hover { scale: 1.06 } .booth-shutter:active { scale: .94 }
+.booth button:disabled { opacity: .5; cursor: default }
+.booth-result { display: grid; place-items: center; max-height: 60vh; padding: 10px; border-radius: 14px; background: rgba(255, 255, 255, .06) }
+.booth-result img { max-width: 100%; max-height: calc(60vh - 20px); border-radius: 4px; box-shadow: 0 10px 30px rgba(0, 0, 0, .4) }
+.booth-result img.strip { rotate: -2deg }
+.booth .chunky { padding: 9px 18px; color: var(--text) }
+.booth .booth-go { background: #f6f1e7; color: #2a1b1b }
+.booth-error p { margin: 10px 0 16px; color: #e9ddd0; line-height: 1.5 }
+
+/* confetti when a to-do gets checked */
+.confetti { position: fixed; z-index: 70; width: 7px; height: 7px; margin: -3.5px; border-radius: 2px; pointer-events: none; animation: boom .7s cubic-bezier(.2, .8, .3, 1) forwards }
+@keyframes boom { to { translate: var(--x) var(--y); rotate: 280deg; opacity: 0 } }
+
+/* ---------- dynamic island ---------- */
+#island { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 50; background: #1d1c1a; color: #f6f1e7; border-radius: 22px; width: 190px; height: 40px; overflow: hidden; box-shadow: var(--sh-2), inset 0 0 0 1px rgba(255, 255, 255, .06); font: 700 14px var(--body); transition: width .5s var(--pop), height .5s var(--pop), border-radius .5s }
+#island.running { width: 240px }
+#island.open { width: 340px; height: 282px; border-radius: 28px }
+#island.asking { width: min(400px, calc(100vw - 24px)); height: auto; border-radius: 24px }
+#island.toasting { width: max-content; min-width: 190px; max-width: calc(100vw - 24px) }
+:root { interpolate-size: allow-keywords } /* lets the island grow smoothly to fit a question or a toast */
+/* questions (ask.js) drop out of the island; the rest of the app waits behind a scrim */
+.island-scrim { position: fixed; inset: 0; z-index: 49; background: rgba(20, 18, 15, .3); backdrop-filter: blur(2px); animation: fade .2s ease-out }
+@keyframes fade { from { opacity: 0 } }
+@keyframes pop { from { opacity: 0; scale: .94 } } /* cards, menus */
+@keyframes rise { from { opacity: 0; translate: 0 6px } }
+.isl-ask { padding: 16px 18px 14px; animation: rise .3s var(--pop) .12s both }
+.isl-ask-title { font: 700 16px/1.3 var(--display); letter-spacing: -.01em }
+.isl-ask p { margin: 4px 0 0; color: #b0a99d; font-size: 13.5px; font-weight: 500; line-height: 1.45 }
+.isl-ask input { width: 100%; margin-top: 12px; padding: 8px 12px; background: #2c2a27; border: 1px solid #3f3b36; border-radius: 10px; color: #f6f1e7; font: 600 15px var(--body); outline: none }
+.isl-ask input:focus { border-color: #8a8378 }
+.isl-ask-row { display: flex; justify-content: flex-end; gap: 6px; margin-top: 14px }
+.isl-ask .isl-btn { padding: 6px 14px; font-size: 13px }
+.isl-btn.danger { background: #e5484d; color: #fff }
+.isl-btn.danger:hover { background: #d13d42 }
+/* toasts: a short message in place of the clock */
+.isl-toast { display: flex; align-items: center; gap: 8px; padding: 0 16px 0 8px; white-space: nowrap; animation: rise .3s var(--pop) }
+.isl-toast-ic { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #2c2a27; font-size: 12px }
+.pill { height: 40px; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; user-select: none; font-variant-numeric: tabular-nums }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--tomato); animation: pulse 1.4s infinite }
+#island:not([data-mode=work]) .dot { background: var(--mint) }
+@keyframes pulse { 50% { opacity: .3; scale: .7 } }
+.panel { padding: 2px 18px 18px; opacity: 0; transition: opacity .15s }
+#island.open .panel { opacity: 1; transition-delay: .18s }
+.tabs { display: flex; gap: 6px; margin-bottom: 12px }
+.isl-btn { border: 0; background: #2c2a27; color: #e9e3d8; border-radius: 999px; padding: 4px 12px; cursor: pointer; font-size: 12.5px; font-weight: 700 }
+.isl-btn:hover { background: #3a3733 }
+.isl-btn.on { background: #f6f1e7; color: #1d1c1a }
+.row { display: flex; gap: 6px; justify-content: center }
+.pomo-time { font: 700 56px/1.15 var(--display); letter-spacing: -.04em; text-align: center; font-variant-numeric: tabular-nums; cursor: pointer; margin: 4px 0 6px }
+.pomo-count { text-align: center; color: #a39c90; font-size: 12px; margin-top: 10px }
+.jump-q { width: 100%; background: #2c2a27; border: 1px solid transparent; border-radius: 10px; color: #f6f1e7; padding: 8px 12px; font: inherit; outline: none }
+.jump-q:focus { border-color: #57524b }
+.jump-list { margin-top: 8px; max-height: 170px; overflow: auto }
+.jump-list div { padding: 5px 10px; border-radius: 8px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.jump-list div:hover, .jump-list div:first-child { background: #2c2a27 }
+
+@media (max-width: 1320px) { /* dock goes icon-only (labels stay for screen readers + tooltips) */
+  .chip { min-width: 0; padding: 6px; font-size: 0; gap: 0 }
+}
+@media (max-width: 700px) {
+  aside { position: fixed; inset: 0 auto 0 0; box-shadow: var(--sh-3) }
+  aside.hidden { box-shadow: none }
+  main { padding: 64px 12px 96px }
+  /* one page at a time: just the right-hand slot, full width; design panel goes under the closed cover */
+  .spread { flex-direction: column }
+  .slot.left, .board, .coil, .tab-rail { display: none }
+  .spread.closed { height: auto }
+  .spread.closed .slot.left { display: block; order: 2; height: auto; padding: 24px 0 }
+  .doc { padding: 24px 14px 14px 44px }
+  .title { font-size: 28px }
+  .tools { left: -40px } .tools .add { display: none }
+  .cols { flex-direction: column; gap: 0 }
+  .dock { left: 12px; right: 12px; translate: none; overflow-x: auto }
+  .chip { min-width: 52px }
+  .turn, aside:not(.hidden) ~ .turn.prev { top: auto; bottom: 92px; width: 40px; height: 40px; font-size: 22px }
+  aside:not(.hidden) ~ .turn.prev, .turn.prev { left: 10px } .turn.next { right: 10px }
+  .folio { display: none }
+  .cover { padding: 28px 40px 28px 52px; gap: 18px }
+  .cover-sticker { width: 88px; height: 88px; font-size: 44px }
+  .cover-title { font-size: 28px }
+  #island.open { width: calc(100vw - 24px) }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important }
+}
+
+/* ---------- the lock screen ---------- */
+.lock { flex: 1; display: grid; place-items: center; align-content: center; gap: 22px; padding: 24px 16px; overflow: auto }
+.lock-brand { display: flex; align-items: center; gap: 9px; font: 700 24px/1 var(--display); letter-spacing: -.03em }
+.lock-brand img { width: 30px; height: 30px }
+.lock-card { width: min(380px, 100%); padding: 30px 28px 24px; text-align: center; background: var(--paper); border: 1px solid var(--edge); border-radius: 20px; box-shadow: var(--sh-3); animation: pop .3s var(--pop) }
+/* a little closed notebook, strapped shut with a padlock */
+.lock-book { position: relative; width: 104px; height: 136px; margin: 0 auto 18px; border-radius: 4px 12px 12px 4px; rotate: -4deg;
+  background: radial-gradient(rgba(255, 255, 255, .38) 2px, transparent 2.5px) 0 0 / 14px 14px, var(--tomato);
+  box-shadow: inset 7px 0 0 rgba(0, 0, 0, .14), 4px 4px 0 -1px var(--paper), 4px 4px 0 0 var(--edge-strong), var(--sh-2) }
+.lock-strap { position: absolute; left: -4px; right: -4px; top: 56px; height: 18px; background: color-mix(in srgb, var(--tomato) 45%, #111); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .2) }
+.lock-pad { position: absolute; top: 44px; right: 8px; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--paper); font-size: 20px; box-shadow: var(--sh-2); transition: scale .3s var(--pop) }
+.lock-book.opening .lock-pad { scale: 1.25 }
+.lock-book.opening .lock-strap { translate: 0 22px; opacity: 0; transition: translate .35s ease-in, opacity .35s ease-in }
+.lock h1 { margin: 0; font: 700 26px/1.15 var(--display); letter-spacing: -.03em }
+.lock-sub { margin: 8px 0 18px; color: var(--muted); font-size: 14.5px; line-height: 1.5 }
+.lock form { display: grid; gap: 10px }
+.lock input { width: 100%; padding: 11px 14px; border: 1px solid var(--edge-strong); border-radius: 11px; background: var(--paper); color: var(--text); font: 600 16px var(--body); outline: none }
+.lock input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent) }
+.lock-error { color: #d93a3f; font-size: 13.5px; font-weight: 700 }
+.lock-go { padding: 11px; border: 0; border-radius: 11px; background: var(--text); color: var(--paper); font: 700 15px var(--body); cursor: pointer; transition: opacity .15s }
+.lock-go:disabled { opacity: .45; cursor: default }
+.lock-note { margin: 16px 0 0; color: var(--muted); font-size: 12.5px; line-height: 1.5 }
+.lock-forgot { margin-top: 14px; border: 0; background: none; color: var(--muted); font-size: 13px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer }
+.lock-erase { margin-top: 16px; padding: 14px; border-radius: 12px; background: color-mix(in srgb, #d93a3f 8%, transparent) }
+.lock-erase p { margin: 0 0 10px; font-size: 13.5px; line-height: 1.45 }
+.lock-erase button { margin: 0 4px; padding: 6px 12px; border: 1px solid var(--edge-strong); border-radius: 9px; background: var(--paper); font-size: 13px; font-weight: 700; cursor: pointer }
+.lock-erase .danger { background: #d93a3f; border-color: transparent; color: #fff }
+.home-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; float: right }
+.home-actions .chunky { padding: 7px 12px; font-size: 13px }
+.theme-btn + .theme-btn { margin-left: 6px }

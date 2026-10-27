@@ -1,0 +1,97 @@
+/* Nook's landing page: same desk, paper, ink and fonts as the app (index.css), no JavaScript. */
+:root {
+  --desk: #f4f0e8; --dot: rgba(60, 45, 20, .07); --paper: #fffefb;
+  --text: #24221f; --soft: #5e5850; --edge: rgba(31, 29, 26, .1);
+  --tomato: #f26a4b; --accent: #d9502f; /* deeper tomato: readable as text on the desk */
+  --highlight: color-mix(in srgb, #ffd166 55%, transparent);
+  --sh-1: 0 1px 2px rgba(31, 29, 26, .06), 0 1px 1px rgba(31, 29, 26, .03);
+  --sh-3: 0 4px 12px rgba(31, 29, 26, .06), 0 28px 56px -18px rgba(31, 29, 26, .28);
+  --display: "Bricolage Grotesque", ui-rounded, "Segoe UI", sans-serif;
+  --body: "Nunito", ui-rounded, "Segoe UI", sans-serif;
+  --hand: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+  color-scheme: light;
+}
+* { box-sizing: border-box }
+html { scroll-behavior: smooth }
+body {
+  margin: 0; color: var(--text); font: 17px/1.65 var(--body); -webkit-font-smoothing: antialiased;
+  background: var(--desk) radial-gradient(var(--dot) 1.2px, transparent 1.6px) 0 0 / 24px 24px;
+}
+img, video { display: block; max-width: 100%; height: auto }
+a { color: inherit }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px }
+h1, h2, h3 { font-family: var(--display); letter-spacing: -.035em; line-height: 1.05; margin: 0 }
+h1 { font-size: clamp(46px, 6.4vw, 84px); font-weight: 800 }
+h2 { font-size: clamp(34px, 4.2vw, 54px); font-weight: 700 }
+h3 { font-size: 28px; font-weight: 700; letter-spacing: -.025em; margin-bottom: 12px }
+p { margin: 0 0 14px }
+mark { color: inherit; background: linear-gradient(transparent 58%, var(--highlight) 58% 92%, transparent 92%); padding: 0 4px; margin: 0 -4px; box-decoration-break: clone; -webkit-box-decoration-break: clone }
+kbd { padding: 1px 7px; font: 700 .82em var(--body); background: var(--paper); border: 1px solid var(--edge); border-bottom-width: 2px; border-radius: 6px }
+.hand { margin: 0 0 8px; font: 600 30px/1.1 var(--hand); color: var(--accent) }
+.center { text-align: center }
+.wrap { width: min(1160px, 100% - 32px); margin-inline: auto }
+.skip { position: absolute; left: -999px } .skip:focus { left: 16px; top: 12px; z-index: 9; padding: 8px 14px; background: var(--paper); border-radius: 10px }
+
+.btn { display: inline-block; padding: 13px 24px; border-radius: 12px; background: var(--text); color: var(--paper); font: 800 16px var(--body); text-decoration: none; box-shadow: var(--sh-1); transition: translate .15s }
+.btn:hover { translate: 0 -2px }
+.btn.soft { background: var(--paper); color: var(--text); border: 1px solid var(--edge) }
+.btn.small { padding: 9px 16px; font-size: 14px }
+
+.top { display: flex; align-items: center; gap: 28px; padding: 20px 0 }
+.brand { display: flex; align-items: center; gap: 9px; font: 700 24px/1 var(--display); letter-spacing: -.03em; text-decoration: none }
+.top nav { display: flex; gap: 22px; margin-left: auto; font-weight: 700; font-size: 15px }
+.top nav a { text-decoration: none; color: var(--soft) } .top nav a:hover { color: var(--text) }
+
+.hero { display: grid; grid-template-columns: 1fr 1.15fr; gap: 48px; align-items: center; padding: 56px 0 96px }
+.lede { font-size: 19px; color: var(--soft); max-width: 34em; margin-top: 22px }
+.ctas { display: flex; flex-wrap: wrap; gap: 12px; margin: 28px 0 14px }
+.fine { font-size: 14px; font-weight: 700; color: var(--soft) }
+.shot { margin: 0; border-radius: 18px; overflow: hidden; box-shadow: var(--sh-3); background: var(--paper) }
+.hero-shot { rotate: 1.5deg }
+
+#features { padding: 40px 0 72px }
+#features > h2 { margin-bottom: 64px }
+.row { display: grid; grid-template-columns: .9fr 1.1fr; gap: 64px; align-items: center; margin-bottom: 96px }
+.row p { color: var(--soft) }
+.row.flip > figure { order: 2 }
+.row figure { justify-self: center; max-width: 520px }
+.cards { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 0; margin: 0 }
+.cards li { padding: 26px 24px 18px; background: var(--paper); border: 1px solid var(--edge); border-radius: 18px; box-shadow: var(--sh-1) }
+.cards h3 { font-size: 22px; margin: 14px 0 8px }
+.cards p { color: var(--soft); font-size: 16px }
+.ic { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; font-size: 24px; background: color-mix(in srgb, #ffd166 40%, var(--paper)) }
+.cards li:nth-child(2) .ic { background: color-mix(in srgb, #8ecbff 40%, var(--paper)) }
+.cards li:nth-child(3) .ic { background: color-mix(in srgb, #c9b8ff 40%, var(--paper)) }
+
+.privacy { padding: 96px 0; background: color-mix(in srgb, var(--paper) 70%, transparent); border-block: 1px solid var(--edge) }
+.privacy .row { margin: 0 auto }
+.privacy h2 { margin-bottom: 24px }
+.checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; color: var(--soft) }
+.checks li { position: relative; padding-left: 36px }
+.checks li::before { content: "✓"; position: absolute; left: 0; top: 2px; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 7px; background: var(--tomato); color: #fff; font: 800 14px var(--body) }
+
+#tour { padding: 96px 0 40px }
+.tour { margin: 36px auto 0; width: 100% }
+
+.faq { max-width: 760px; padding: 72px 0 }
+.faq h2 { margin-bottom: 32px }
+details { background: var(--paper); border: 1px solid var(--edge); border-radius: 14px; margin-bottom: 12px; box-shadow: var(--sh-1) }
+summary { cursor: pointer; padding: 18px 22px; font: 700 19px var(--display); letter-spacing: -.015em }
+details p { padding: 0 22px 6px; color: var(--soft) }
+
+.end { padding: 48px 0 104px }
+.end h2 { margin-bottom: 28px }
+.foot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 28px 0 40px; border-top: 1px solid var(--edge); color: var(--soft); font-size: 14px; font-weight: 600 }
+.foot .brand { font-size: 18px; color: var(--text) }
+
+@media (max-width: 860px) {
+  .hero, .row { grid-template-columns: 1fr; gap: 36px }
+  .hero { padding: 24px 0 72px }
+  .row.flip > figure { order: 0 }
+  .row { margin-bottom: 72px }
+  .row figure { max-width: 420px }
+  .cards { grid-template-columns: 1fr }
+  .top nav { display: none }
+  .top .btn { margin-left: auto }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto } .btn { transition: none } }

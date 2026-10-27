@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nook</title>
+    <!-- the app itself is just a lock screen to a crawler; the landing page (/) is what gets indexed -->
+    <meta name="robots" content="noindex" />
+    <!-- theme before first paint: your pick (☀️/🌙 in the sidebar), else the system's -->
+    <script>
+      try { document.documentElement.dataset.theme = localStorage.getItem('nook.theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') }
+      catch { document.documentElement.dataset.theme = 'light' }
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/nook.svg" />
+    <meta name="theme-color" content="#ffd23f" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Caveat:wght@500..700&family=Nunito:wght@400..800&display=swap" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
