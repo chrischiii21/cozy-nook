@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://nook.example/sitemap.xml
+Sitemap: https://cozy-nook-olive.vercel.app/sitemap.xml

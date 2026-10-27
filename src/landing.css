@@ -81,6 +81,8 @@ details p { padding: 0 22px 6px; color: var(--soft) }
 
 .end { padding: 48px 0 104px }
 .end h2 { margin-bottom: 28px }
+.url { margin-top: 18px; font-weight: 700; color: var(--soft) }
+.url a { color: var(--accent); text-underline-offset: 3px }
 .foot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 28px 0 40px; border-top: 1px solid var(--edge); color: var(--soft); font-size: 14px; font-weight: 600 }
 .foot .brand { font-size: 18px; color: var(--text) }
 
